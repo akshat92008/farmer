@@ -1,0 +1,162 @@
+{
+  "entities": {
+    "FarmerProfile": {
+      "title": "FarmerProfile",
+      "description": "Farmer profile, preferred language, farm location, land size, and consent settings.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner UID matching request.auth.uid" },
+        "farmerName": { "type": "string", "description": "Display name of the farmer" },
+        "preferredLanguage": { "type": "string", "enum": ["hi", "en"], "description": "UI and voice language preference" },
+        "voiceEnabled": { "type": "boolean", "description": "Whether spoken Hindi responses are enabled by default" },
+        "stateName": { "type": "string", "description": "Indian State name" },
+        "districtName": { "type": "string", "description": "District name" },
+        "villageName": { "type": "string", "description": "Optional village name" },
+        "landSizeAcres": { "type": "number", "description": "Total farm size in acres" },
+        "irrigationType": { "type": "string", "description": "Primary irrigation source" },
+        "soilType": { "type": "string", "description": "Primary soil type" },
+        "consentGiven": { "type": "boolean", "description": "Explicit user consent for farm profile personalisation" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server creation timestamp via FieldValue.serverTimestamp()" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server update timestamp via FieldValue.serverTimestamp()" }
+      },
+      "required": [
+        "userId", "farmerName", "preferredLanguage", "voiceEnabled",
+        "stateName", "districtName", "villageName", "landSizeAcres",
+        "irrigationType", "soilType", "consentGiven", "createdAt", "updatedAt"
+      ]
+    },
+    "CropCycle": {
+      "title": "CropCycle",
+      "description": "A field and crop cycle managed by the farmer.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner UID" },
+        "fieldName": { "type": "string", "description": "Name of the plot/field" },
+        "cropName": { "type": "string", "description": "Crop name in Hindi/English" },
+        "varietyName": { "type": "string", "description": "Seed variety" },
+        "areaAcres": { "type": "number", "description": "Field area in acres" },
+        "season": { "type": "string", "enum": ["Rabi", "Kharif", "Zaid"], "description": "Cropping season" },
+        "sowingDate": { "type": "string", "description": "Sowing date string" },
+        "growthStage": { "type": "string", "description": "Current crop growth stage" },
+        "irrigationMethod": { "type": "string", "description": "Irrigation method for this field" },
+        "notes": { "type": "string", "description": "Additional field observations" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp" }
+      },
+      "required": [
+        "userId", "fieldName", "cropName", "varietyName", "areaAcres",
+        "season", "sowingDate", "growthStage", "irrigationMethod", "notes",
+        "createdAt", "updatedAt"
+      ]
+    },
+    "CropCase": {
+      "title": "CropCase",
+      "description": "Crop Doctor plant problem diagnosis case and expert escalation record.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner UID" },
+        "cropName": { "type": "string", "description": "Affected crop name" },
+        "growthStage": { "type": "string", "description": "Growth stage at inspection" },
+        "symptoms": { "type": "string", "description": "Observed symptoms on leaf, stem, or root" },
+        "spreadScope": { "type": "string", "description": "Whether isolated or spread across field" },
+        "likelyCauses": { "type": "string", "description": "Candidate causes with evidence and alternatives" },
+        "confidenceLevel": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "NEEDS_EXPERT"], "description": "Cautious confidence indicator" },
+        "safeNextSteps": { "type": "string", "description": "Non-hazardous inspection and management steps" },
+        "expertStatus": { "type": "string", "enum": ["NONE", "ESCALATED", "RESOLVED"], "description": "Escalation status to KVK/expert" },
+        "expertNotes": { "type": "string", "description": "Notes or response from KVK/agricultural specialist" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp" }
+      },
+      "required": [
+        "userId", "cropName", "growthStage", "symptoms", "spreadScope",
+        "likelyCauses", "confidenceLevel", "safeNextSteps", "expertStatus",
+        "expertNotes", "createdAt", "updatedAt"
+      ]
+    },
+    "FarmTransaction": {
+      "title": "FarmTransaction",
+      "description": "Farm expense or harvest sale record for calculating per-acre costs and break-even price.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner UID" },
+        "txType": { "type": "string", "enum": ["EXPENSE", "SALE"], "description": "Expense or Sale" },
+        "category": { "type": "string", "description": "Category such as Seed, Fertiliser, Labour, Irrigation, Transport, Sale" },
+        "cropName": { "type": "string", "description": "Associated crop" },
+        "title": { "type": "string", "description": "Description of expense or sale" },
+        "amountInr": { "type": "number", "description": "Total amount in INR" },
+        "quantityQuintal": { "type": "number", "description": "Quantity in quintals (for sales, 0 for general expenses)" },
+        "txDate": { "type": "string", "description": "Date of transaction" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp" }
+      },
+      "required": [
+        "userId", "txType", "category", "cropName", "title",
+        "amountInr", "quantityQuintal", "txDate", "createdAt", "updatedAt"
+      ]
+    },
+    "FarmReminder": {
+      "title": "FarmReminder",
+      "description": "Crop calendar task and timely advisory reminder.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner UID" },
+        "cropName": { "type": "string", "description": "Target crop" },
+        "taskTitle": { "type": "string", "description": "Actionable task in Hindi" },
+        "whySuggested": { "type": "string", "description": "Transparent reason why this task is suggested" },
+        "dueDate": { "type": "string", "description": "Due date or window" },
+        "status": { "type": "string", "enum": ["PENDING", "COMPLETED", "SKIPPED"], "description": "Completion state" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp" }
+      },
+      "required": [
+        "userId", "cropName", "taskTitle", "whySuggested",
+        "dueDate", "status", "createdAt", "updatedAt"
+      ]
+    },
+    "AssistantMessage": {
+      "title": "AssistantMessage",
+      "description": "Hindi voice/chat conversation turn with source citation and feedback flag.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner UID" },
+        "role": { "type": "string", "enum": ["USER", "ASSISTANT"], "description": "Speaker role" },
+        "topic": { "type": "string", "enum": ["GENERAL", "CROP_DOCTOR", "SCHEME", "WEATHER", "MANDI", "ACCOUNTS"], "description": "Detected intent category" },
+        "messageText": { "type": "string", "description": "Hindi or English message content" },
+        "sourceCitation": { "type": "string", "description": "Source attribution and verification date" },
+        "flaggedHarmful": { "type": "boolean", "description": "Whether farmer reported this response for expert review" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp" }
+      },
+      "required": [
+        "userId", "role", "topic", "messageText",
+        "sourceCitation", "flaggedHarmful", "createdAt", "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/FarmerProfile" },
+      "description": "Farmer profile document keyed by authenticated user UID."
+    },
+    "/users/{userId}/crop_cycles/{cycleId}": {
+      "schema": { "$ref": "#/entities/CropCycle" },
+      "description": "Fields and active crop cycles owned by the farmer."
+    },
+    "/users/{userId}/crop_cases/{caseId}": {
+      "schema": { "$ref": "#/entities/CropCase" },
+      "description": "Crop Doctor diagnoses and expert escalations owned by the farmer."
+    },
+    "/users/{userId}/farm_transactions/{txId}": {
+      "schema": { "$ref": "#/entities/FarmTransaction" },
+      "description": "Farm expense and harvest sale transactions owned by the farmer."
+    },
+    "/users/{userId}/reminders/{reminderId}": {
+      "schema": { "$ref": "#/entities/FarmReminder" },
+      "description": "Crop calendar tasks and reminders owned by the farmer."
+    },
+    "/users/{userId}/conversations/{msgId}": {
+      "schema": { "$ref": "#/entities/AssistantMessage" },
+      "description": "Voice and text assistant conversation history owned by the farmer."
+    }
+  }
+}

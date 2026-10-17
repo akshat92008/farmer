@@ -1,0 +1,6 @@
+{
+  "name": "Amaura Farmer",
+  "description": "Hindi-first, voice-enabled agricultural companion for Indian farmers providing crop doctor analysis, government scheme eligibility, weather advisories, mandi price calculators, farm accounts, and expert escalation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

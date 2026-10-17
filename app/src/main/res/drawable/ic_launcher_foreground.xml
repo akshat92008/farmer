@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Warm Golden Harvest Sun Arc -->
+    <path
+        android:fillColor="#F4A261"
+        android:pathData="M54,24 A18,18 0 1,1 36,42 A18,18 0 0,1 54,24 Z" />
+    <!-- Central Wheat & Sprout Stem -->
+    <path
+        android:fillColor="#E9C46A"
+        android:pathData="M52,32 L56,32 L56,78 L52,78 Z" />
+    <!-- Left Sprout Leaf -->
+    <path
+        android:fillColor="#52B788"
+        android:pathData="M52,62 C36,60 28,48 30,36 C42,38 50,48 52,62 Z" />
+    <!-- Right Sprout Leaf -->
+    <path
+        android:fillColor="#74C69D"
+        android:pathData="M56,56 C72,54 80,42 78,30 C66,32 58,42 56,56 Z" />
+    <!-- Golden Wheat Grains Top -->
+    <path
+        android:fillColor="#FFD166"
+        android:pathData="M54,22 C49,27 49,33 54,37 C59,33 59,27 54,22 Z" />
+    <!-- Terracotta Soil Furrow Base -->
+    <path
+        android:fillColor="#E76F51"
+        android:pathData="M28,76 Q54,68 80,76 Q68,84 54,84 Q40,84 28,76 Z" />
+</vector>

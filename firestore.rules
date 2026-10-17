@@ -1,0 +1,326 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function hasValidTimestampsOnCreate(data) {
+      return data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function hasValidTimestampsOnUpdate(data, oldData) {
+      return data.createdAt == oldData.createdAt &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidFarmerProfile(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             (!('id' in data) || (data.id is string && data.id == request.auth.uid)) &&
+             data.farmerName is string && data.farmerName.size() >= 1 && data.farmerName.size() <= 80 &&
+             data.preferredLanguage is string && data.preferredLanguage in ['hi', 'en'] &&
+             data.voiceEnabled is bool &&
+             data.stateName is string && data.stateName.size() >= 0 && data.stateName.size() <= 60 &&
+             data.districtName is string && data.districtName.size() >= 0 && data.districtName.size() <= 60 &&
+             data.villageName is string && data.villageName.size() <= 80 &&
+             data.landSizeAcres is number && data.landSizeAcres >= 0 && data.landSizeAcres <= 10000 &&
+             data.irrigationType is string && data.irrigationType.size() >= 1 && data.irrigationType.size() <= 60 &&
+             data.soilType is string && data.soilType.size() >= 1 && data.soilType.size() <= 60 &&
+             data.consentGiven is bool &&
+             (!('hasAadhaarEkyc' in data) || data.hasAadhaarEkyc is bool) &&
+             (!('isIncomeTaxPayer' in data) || data.isIncomeTaxPayer is bool) &&
+             (!('hasKccCard' in data) || data.hasKccCard is bool);
+    }
+
+    function isValidCropCycle(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.fieldName is string && data.fieldName.size() >= 1 && data.fieldName.size() <= 80 &&
+             data.cropName is string && data.cropName.size() >= 1 && data.cropName.size() <= 80 &&
+             data.varietyName is string && data.varietyName.size() >= 1 && data.varietyName.size() <= 80 &&
+             data.areaAcres is number && data.areaAcres > 0 && data.areaAcres <= 10000 &&
+             data.season is string && data.season in ['Rabi', 'Kharif', 'Zaid'] &&
+             data.sowingDate is string && data.sowingDate.size() >= 1 && data.sowingDate.size() <= 40 &&
+             data.growthStage is string && data.growthStage.size() >= 1 && data.growthStage.size() <= 60 &&
+             data.irrigationMethod is string && data.irrigationMethod.size() >= 1 && data.irrigationMethod.size() <= 60 &&
+             data.notes is string && data.notes.size() <= 300;
+    }
+
+    function isValidCropCase(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.cropName is string && data.cropName.size() >= 1 && data.cropName.size() <= 80 &&
+             data.growthStage is string && data.growthStage.size() >= 1 && data.growthStage.size() <= 60 &&
+             data.symptoms is string && data.symptoms.size() >= 1 && data.symptoms.size() <= 500 &&
+             data.spreadScope is string && data.spreadScope.size() >= 1 && data.spreadScope.size() <= 100 &&
+             data.likelyCauses is string && data.likelyCauses.size() >= 1 && data.likelyCauses.size() <= 1500 &&
+             data.confidenceLevel is string && data.confidenceLevel in ['LOW', 'MEDIUM', 'HIGH', 'NEEDS_EXPERT'] &&
+             data.safeNextSteps is string && data.safeNextSteps.size() >= 1 && data.safeNextSteps.size() <= 1500 &&
+             data.expertStatus is string && data.expertStatus in ['NONE', 'ESCALATED', 'RESOLVED'] &&
+             data.expertNotes is string && data.expertNotes.size() <= 1000 &&
+             (!('photoBase64' in data) || (data.photoBase64 is string && data.photoBase64.size() <= 60000));
+    }
+
+    function isValidFarmTransaction(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.txType is string && data.txType in ['EXPENSE', 'SALE'] &&
+             data.category is string && data.category.size() >= 1 && data.category.size() <= 60 &&
+             data.cropName is string && data.cropName.size() >= 1 && data.cropName.size() <= 80 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+             data.amountInr is number && data.amountInr > 0 && data.amountInr <= 100000000 &&
+             data.quantityQuintal is number && data.quantityQuintal >= 0 && data.quantityQuintal <= 100000 &&
+             data.txDate is string && data.txDate.size() >= 1 && data.txDate.size() <= 40 &&
+             (!('fieldName' in data) || (data.fieldName is string && data.fieldName.size() <= 80));
+    }
+
+    function isValidFarmReminder(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.cropName is string && data.cropName.size() >= 1 && data.cropName.size() <= 80 &&
+             data.taskTitle is string && data.taskTitle.size() >= 1 && data.taskTitle.size() <= 150 &&
+             data.whySuggested is string && data.whySuggested.size() >= 1 && data.whySuggested.size() <= 400 &&
+             data.dueDate is string && data.dueDate.size() >= 1 && data.dueDate.size() <= 40 &&
+             data.status is string && data.status in ['PENDING', 'COMPLETED', 'SKIPPED'];
+    }
+
+    function isValidAssistantMessage(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.role is string && data.role in ['USER', 'ASSISTANT'] &&
+             data.topic is string && data.topic in ['GENERAL', 'CROP_DOCTOR', 'SCHEME', 'WEATHER', 'MANDI', 'ACCOUNTS'] &&
+             data.messageText is string && data.messageText.size() >= 1 && data.messageText.size() <= 3000 &&
+             data.sourceCitation is string && data.sourceCitation.size() <= 300 &&
+             data.flaggedHarmful is bool;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId && existing().userId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       incoming().keys().hasAll([
+                         'userId', 'farmerName', 'preferredLanguage', 'voiceEnabled',
+                         'stateName', 'districtName', 'villageName', 'landSizeAcres',
+                         'irrigationType', 'soilType', 'consentGiven', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'farmerName', 'preferredLanguage', 'voiceEnabled',
+                         'stateName', 'districtName', 'villageName', 'landSizeAcres',
+                         'irrigationType', 'soilType', 'consentGiven',
+                         'hasAadhaarEkyc', 'isIncomeTaxPayer', 'hasKccCard',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       hasValidTimestampsOnCreate(incoming()) &&
+                       isValidFarmerProfile(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidCropProfileUpdate(userId);
+
+      allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+
+      function isValidCropProfileUpdate(uid) {
+        return isValidId(uid) &&
+               request.auth.uid == uid &&
+               isValidFarmerProfile(incoming()) &&
+               incoming().userId == existing().userId &&
+               hasValidTimestampsOnUpdate(incoming(), existing()) &&
+               incoming().diff(existing()).affectedKeys().hasOnly([
+                 'farmerName', 'preferredLanguage', 'voiceEnabled',
+                 'stateName', 'districtName', 'villageName', 'landSizeAcres',
+                 'irrigationType', 'soilType', 'consentGiven',
+                 'hasAadhaarEkyc', 'isIncomeTaxPayer', 'hasKccCard',
+                 'updatedAt'
+               ]);
+      }
+
+      match /crop_cycles/{cycleId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(cycleId) && request.auth.uid == userId && existing().userId == request.auth.uid;
+        allow list: if isSignedIn() && request.auth.uid == userId && existing().userId == request.auth.uid;
+
+        allow create: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(cycleId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll([
+                           'userId', 'fieldName', 'cropName', 'varietyName', 'areaAcres',
+                           'season', 'sowingDate', 'growthStage', 'irrigationMethod', 'notes',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'fieldName', 'cropName', 'varietyName', 'areaAcres',
+                           'season', 'sowingDate', 'growthStage', 'irrigationMethod', 'notes',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         hasValidTimestampsOnCreate(incoming()) &&
+                         isValidCropCycle(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(cycleId) &&
+                         request.auth.uid == userId &&
+                         isValidCropCycle(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         hasValidTimestampsOnUpdate(incoming(), existing()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'fieldName', 'cropName', 'varietyName', 'areaAcres',
+                           'season', 'sowingDate', 'growthStage', 'irrigationMethod', 'notes',
+                           'updatedAt'
+                         ]);
+
+        allow delete: if isSignedIn() && isValidId(userId) && isValidId(cycleId) && request.auth.uid == userId && existing().userId == request.auth.uid;
+      }
+
+      match /crop_cases/{caseId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(caseId) && request.auth.uid == userId && existing().userId == request.auth.uid;
+        allow list: if isSignedIn() && request.auth.uid == userId && existing().userId == request.auth.uid;
+
+        allow create: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(caseId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll([
+                           'userId', 'cropName', 'growthStage', 'symptoms', 'spreadScope',
+                           'likelyCauses', 'confidenceLevel', 'safeNextSteps', 'expertStatus',
+                           'expertNotes', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'cropName', 'growthStage', 'symptoms', 'spreadScope',
+                           'likelyCauses', 'confidenceLevel', 'safeNextSteps', 'expertStatus',
+                           'expertNotes', 'photoBase64', 'createdAt', 'updatedAt'
+                         ]) &&
+                         hasValidTimestampsOnCreate(incoming()) &&
+                         isValidCropCase(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(caseId) &&
+                         request.auth.uid == userId &&
+                         isValidCropCase(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         hasValidTimestampsOnUpdate(incoming(), existing()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'symptoms', 'spreadScope', 'likelyCauses', 'confidenceLevel',
+                           'safeNextSteps', 'expertStatus', 'expertNotes', 'photoBase64', 'updatedAt'
+                         ]);
+
+        allow delete: if isSignedIn() && isValidId(userId) && isValidId(caseId) && request.auth.uid == userId && existing().userId == request.auth.uid;
+      }
+
+      match /farm_transactions/{txId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(txId) && request.auth.uid == userId && existing().userId == request.auth.uid;
+        allow list: if isSignedIn() && request.auth.uid == userId && existing().userId == request.auth.uid;
+
+        allow create: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(txId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll([
+                           'userId', 'txType', 'category', 'cropName', 'title',
+                           'amountInr', 'quantityQuintal', 'txDate', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'txType', 'category', 'cropName', 'title',
+                           'amountInr', 'quantityQuintal', 'txDate', 'fieldName', 'createdAt', 'updatedAt'
+                         ]) &&
+                         hasValidTimestampsOnCreate(incoming()) &&
+                         isValidFarmTransaction(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(txId) &&
+                         request.auth.uid == userId &&
+                         isValidFarmTransaction(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         hasValidTimestampsOnUpdate(incoming(), existing()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'txType', 'category', 'cropName', 'title',
+                           'amountInr', 'quantityQuintal', 'txDate', 'fieldName', 'updatedAt'
+                         ]);
+
+        allow delete: if isSignedIn() && isValidId(userId) && isValidId(txId) && request.auth.uid == userId && existing().userId == request.auth.uid;
+      }
+
+      match /reminders/{reminderId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(reminderId) && request.auth.uid == userId && existing().userId == request.auth.uid;
+        allow list: if isSignedIn() && request.auth.uid == userId && existing().userId == request.auth.uid;
+
+        allow create: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(reminderId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll([
+                           'userId', 'cropName', 'taskTitle', 'whySuggested',
+                           'dueDate', 'status', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'cropName', 'taskTitle', 'whySuggested',
+                           'dueDate', 'status', 'createdAt', 'updatedAt'
+                         ]) &&
+                         hasValidTimestampsOnCreate(incoming()) &&
+                         isValidFarmReminder(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(reminderId) &&
+                         request.auth.uid == userId &&
+                         isValidFarmReminder(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         hasValidTimestampsOnUpdate(incoming(), existing()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'taskTitle', 'whySuggested', 'dueDate', 'status', 'updatedAt'
+                         ]);
+
+        allow delete: if isSignedIn() && isValidId(userId) && isValidId(reminderId) && request.auth.uid == userId && existing().userId == request.auth.uid;
+      }
+
+      match /conversations/{msgId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(msgId) && request.auth.uid == userId && existing().userId == request.auth.uid;
+        allow list: if isSignedIn() && request.auth.uid == userId && existing().userId == request.auth.uid;
+
+        allow create: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(msgId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll([
+                           'userId', 'role', 'topic', 'messageText',
+                           'sourceCitation', 'flaggedHarmful', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'role', 'topic', 'messageText',
+                           'sourceCitation', 'flaggedHarmful', 'createdAt', 'updatedAt'
+                         ]) &&
+                         hasValidTimestampsOnCreate(incoming()) &&
+                         isValidAssistantMessage(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(msgId) &&
+                         request.auth.uid == userId &&
+                         isValidAssistantMessage(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         hasValidTimestampsOnUpdate(incoming(), existing()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'flaggedHarmful', 'updatedAt'
+                         ]);
+
+        allow delete: if isSignedIn() && isValidId(userId) && isValidId(msgId) && request.auth.uid == userId && existing().userId == request.auth.uid;
+      }
+    }
+  }
+}

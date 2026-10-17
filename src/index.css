@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Mukta', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #F6F5EE;
+    color: #1C281E;
+  }
+
+  h1, h2, h3, h4, .font-heading {
+    font-family: 'Poppins', 'Mukta', sans-serif;
+  }
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #EFECE1;
+}
+::-webkit-scrollbar-thumb {
+  background: #A7B9A8;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2E6F40;
+}
